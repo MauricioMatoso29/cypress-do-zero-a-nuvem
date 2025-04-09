@@ -9,6 +9,8 @@ describe('Central de Atendimento ao Cliente TAT', () => {
   })
 
   it('CT2 - preenche os campos obrigatórios e envia o formalário, validando a msg de sucesso', () => {
+    cy.clock()//pausa o tempo do navegador
+
     const longText = Cypress._.repeat('teste!',20)//vai repetir 10x a string
 
     cy.get('#firstName').type('Mauricio')
@@ -18,6 +20,10 @@ describe('Central de Atendimento ao Cliente TAT', () => {
     cy.get('button[type="submit"]').click()
 
     cy.get('.success').should('be.visible')
+
+    cy.tick(3000)//pula 3 seg para frente para que dps possa verificar se a msg de sucesso desapareceu
+
+    cy.get('.success').should('not.be.visible')
   })
 
   it('CT3 - exibe mensagem de erro ao submeter o formulário com um email com formatação inválida', () => {
@@ -209,6 +215,56 @@ describe('Central de Atendimento ao Cliente TAT', () => {
 
   })
 
+  it('CT21 - exibe e oculta as mensagens de sucesso e erro usando .invoke()', () => {
+    cy.get('.success')
+      .should('not.be.visible')
+      .invoke('show')
+      .should('be.visible')
+      .and('contain', 'Mensagem enviada com sucesso.')
+      .invoke('hide')
+      .should('not.be.visible')
+    cy.get('.error')
+      .should('not.be.visible')
+      .invoke('show')
+      .should('be.visible')
+      .and('contain', 'Valide os campos obrigatórios!')
+      .invoke('hide')
+      .should('not.be.visible')
+  })
+
+  it('CT22 - preenche o campo da área de texto usando o comando invoke', () => {
+
+    cy.get('#open-text-area').invoke('val', 'um texto qualquer').should('have.value', 'um texto qualquer')
+
+  })
+
+  it('CT23 - faz uma requisição HTTP', () => {
+
+    cy.request('https://cac-tat-v3.s3.eu-central-1.amazonaws.com/index.html')
+      .as('getRequest')
+      .its('status')
+      .should('be.equal', 200)
+
+    cy.get('@getRequest')
+      .its('statusText')
+      .should('be.equal', 'OK')
+
+    cy.get('@getRequest')
+      .its('body')
+      .should('include', 'CAC TAT')
+  })
+
+  it.only('CT24 - encontre o gato escondido', () => {
+
+    cy.get('#cat')
+      .invoke('show')
+      .should('be.visible')
+
+    //como alterar o texto
+    cy.get('#title')
+      .invoke('text', 'CAT TAT')// nome do titulo foi alterado de cac tat para caT tat
+
+  })
   
 
 })
